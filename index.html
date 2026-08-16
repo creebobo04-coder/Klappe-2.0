@@ -79,7 +79,10 @@ nav button .k{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(
 nav .setgo{margin-top:7px;justify-content:center;font-weight:650;color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent-line)}
 nav .setgo:hover{filter:brightness(1.08);color:var(--accent)}
 .filters{padding:11px 15px 4px;display:flex;flex-direction:column;gap:8px}
-.klapp{border-bottom:1px solid var(--hair);flex:0 0 auto}
+.klapp{border-bottom:1px solid var(--hair);flex:0 0 auto;min-height:0}
+.klapp.liste{border-bottom:none}
+.klapp.liste[open]{flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden}
+.klapp.liste[open] > summary{flex:0 0 auto}
 .klapp > summary{list-style:none;cursor:pointer;padding:11px 16px;font-size:9.5px;letter-spacing:.15em;
   text-transform:uppercase;color:var(--ink-3);font-weight:650;display:flex;align-items:center;gap:8px}
 .klapp > summary::-webkit-details-marker{display:none}
@@ -98,7 +101,7 @@ nav .setgo:hover{filter:brightness(1.08);color:var(--accent)}
 .sel::after{content:"";position:absolute;right:10px;top:50%;width:4.5px;height:4.5px;border-right:1.4px solid var(--ink-3);border-bottom:1.4px solid var(--ink-3);transform:translateY(-70%) rotate(45deg);pointer-events:none}
 .reset{align-self:flex-start;font-size:11.5px;color:var(--ink-3)}
 .reset:hover{color:var(--accent)}
-.outline{flex:1 1 auto;overflow-y:auto;padding:11px 9px 16px;min-height:120px}
+.outline{flex:1 1 auto;overflow-y:auto;padding:4px 9px 14px;min-height:90px}
 .outline .eyebrow{padding:0 9px 7px}
 .o-akt{padding:11px 9px 4px;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4)}
 .o-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:5px 9px;border-radius:5px;color:var(--ink-2)}
@@ -312,6 +315,12 @@ textarea.big{width:100%;min-height:230px;background:var(--panel);border-radius:9
 .settake input{width:92px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;padding:9px 11px;font-family:var(--mono);font-size:13px;text-align:center}
 
 dialog{border:none;border-radius:12px;background:var(--panel);color:var(--ink);padding:0;width:min(680px,94vw);box-shadow:var(--shadow),inset 0 0 0 1px var(--line)}
+dialog.gross{width:min(1100px,96vw)}
+dialog.gross .db{max-height:78vh}
+dialog.gross svg{width:100%;height:auto}
+.karte.zoom{cursor:zoom-in}
+.karte.zoom:hover{box-shadow:inset 0 0 0 1px var(--line)}
+.karte .lupe{float:right;color:var(--ink-4);font-size:12px}
 dialog::backdrop{background:rgba(10,10,12,.6)}
 .dh{padding:16px 20px 14px;border-bottom:1px solid var(--hair)}
 .dh h3{font-family:var(--serif);font-size:17px;font-weight:600}
@@ -459,6 +468,35 @@ svg .bal:hover{opacity:.75}
   .search{min-width:150px}
   .vbody{grid-template-columns:1fr}
 }
+/* ───────── Telefon ───────── */
+@media (max-width:640px){
+  .topbar{padding:0 12px;height:auto;min-height:52px;gap:8px;padding-top:6px;padding-bottom:6px}
+  .topbar h2{font-size:16px}
+  .sheet{padding:14px 12px 120px}
+  .paar{margin:13px 0;padding-left:8px}
+  .script{font-size:12px;padding:10px 11px;margin:10px 0 6px}
+  .blocks,.setblocks{grid-template-columns:1fr;gap:9px}
+  .shot-line{flex-wrap:wrap;row-gap:3px}
+  .scene-line{flex-wrap:wrap;row-gap:4px;font-size:11px}
+  .lz{padding:3px 8px}
+  .lz i{display:none}
+  aside{width:min(88vw,300px)}
+  .stats{grid-template-columns:1fr;gap:12px}
+  .karte{padding:13px 14px 15px}
+  .kpi div{flex:1 1 44%}
+  .vtag > .kopf{padding:13px 14px 11px}
+  .vbody,.vchips,.warnung{padding-left:14px;padding-right:14px}
+  .setfoot{padding-left:14px;padding-right:14px}
+  #set > div{padding-left:14px;padding-right:14px}
+  .setscript{font-size:12.5px;padding:12px 13px;margin-bottom:16px}
+  .day > div{overflow-x:auto}
+  table{min-width:560px}
+  .db{padding:14px 14px;max-height:70vh}
+  .g2,.g3{grid-template-columns:1fr}
+  dialog.gross .db{max-height:74vh}
+  .df{flex-wrap:wrap;gap:8px}
+  .trefnav span{min-width:44px}
+}
 @media (pointer:coarse){
   .tick,.ttick{min-width:30px;min-height:30px}
   .tool{min-width:34px;min-height:30px}
@@ -487,6 +525,8 @@ svg .bal:hover{opacity:.75}
       </svg>
       <div><div class="big" id="pZahl"></div><div class="small" id="pText"></div></div>
     </div>
+    <details class="klapp" id="blockNav" open>
+      <summary>Ansichten</summary>
     <nav>
       <button data-nav="drehbuch" aria-current="true">Drehbuch <span class="k">1</span></button>
       <button data-nav="drehplan">Drehplan <span class="k">2</span></button>
@@ -497,6 +537,7 @@ svg .bal:hover{opacity:.75}
       <button data-nav="statistik">Statistik <span class="k">7</span></button>
       <button class="setgo" id="btnSet">Set-Modus</button>
     </nav>
+    </details>
     <details class="klapp" id="filterBlock">
       <summary>Filter und Anzeige<span class="zahl" id="filterZahl" hidden></span></summary>
       <div class="filters">
@@ -511,7 +552,10 @@ svg .bal:hover{opacity:.75}
         <label><input type="checkbox" id="swRaus" checked><span>Gestrichenes anzeigen</span></label>
       </div>
     </details>
-    <div class="outline" id="outline"></div>
+    <details class="klapp liste" id="blockListe" open>
+      <summary>Szenen</summary>
+      <div class="outline" id="outline"></div>
+    </details>
     <div class="railfoot">
       <button id="btnHilfe">Hilfe</button>
       <button id="btnOrte">Orte</button>
@@ -657,6 +701,12 @@ svg .bal:hover{opacity:.75}
     <button class="btn gh" id="hDelete">Löschen</button><div style="flex:1"></div>
     <button class="btn" data-close>Abbrechen</button><button class="btn prim" id="hSave">Speichern</button>
   </div>
+</dialog>
+
+<dialog id="dlgKarte" class="gross">
+  <div class="dh"><h3 id="kaTitel">Diagramm</h3></div>
+  <div class="db" id="kaBody"></div>
+  <div class="df"><button class="btn prim" data-close>Schließen</button></div>
 </dialog>
 
 <dialog id="dlgKostuem">
@@ -1092,14 +1142,26 @@ function trefferGeh(n){
 }
 
 /* ═════════ Anzeige-Einstellungen ═══════════════════════════════════ */
+const BLOECKE = ["blockNav", "filterBlock", "blockListe"];
 function anzeigeLaden(){
   try{
     const a = JSON.parse(localStorage.getItem(ANSKEY) || "null");
     if(a && typeof a.zeigeRaus === "boolean") V.zeigeRaus = a.zeigeRaus;
+    if(a && a.bloecke) V.bloecke = a.bloecke;
   }catch(e){}
 }
 function anzeigeSichern(){
-  try{ localStorage.setItem(ANSKEY, JSON.stringify({zeigeRaus:V.zeigeRaus})); }catch(e){}
+  const b = {};
+  BLOECKE.forEach(id=>{ const el = document.getElementById(id); if(el) b[id] = el.open; });
+  try{ localStorage.setItem(ANSKEY, JSON.stringify({zeigeRaus:V.zeigeRaus, bloecke:b})); }catch(e){}
+}
+function bloeckeHerstellen(){
+  BLOECKE.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(V.bloecke && typeof V.bloecke[id] === "boolean") el.open = V.bloecke[id];
+    el.addEventListener("toggle", anzeigeSichern);
+  });
 }
 
 /* ───────── Hilfen ───────── */
@@ -1255,6 +1317,18 @@ function detailHtml(h){
 
 
 /* ═════════ Diagramme, alles von Hand als SVG ═══════════════════════ */
+/* Ein Diagramm groß im Fenster zeigen. Es wird der fertige Inhalt der
+   Karte übernommen, deshalb sieht es genauso aus, nur größer. */
+function karteGross(el){
+  const h4 = el.querySelector("h4");
+  let titel = "Diagramm";
+  if(h4){ const k = h4.cloneNode(true); const l = k.querySelector(".lupe"); if(l) l.remove(); titel = k.textContent.trim(); }
+  $("#kaTitel").textContent = titel;
+  const teile = [...el.children].filter(k=>k.tagName !== "H4" && !k.classList.contains("lupe"));
+  $("#kaBody").innerHTML = teile.map(k=>k.outerHTML).join("");
+  $("#dlgKarte").showModal();
+}
+
 function balkenH(daten, farbe){
   if(!daten.length) return `<p style="color:var(--ink-3);font-size:12.5px">Noch keine Daten.</p>`;
   const max = Math.max(1, ...daten.map(d=>d.wert));
@@ -1825,6 +1899,15 @@ function zeichne(){
   if(lb) lb.onclick = kopiereListe;
   $$("[data-stufe]").forEach(b=> b.onclick = ()=>{ V.stufe = b.dataset.stufe; zeichne(); });
 
+  $$("#sheet .karte").forEach(k=>{
+    if(!k.querySelector("svg") || k.querySelector("input")) return;
+    k.classList.add("zoom");
+    k.title = "Zum Vergrößern anklicken";
+    const h4 = k.querySelector("h4");
+    if(h4 && !h4.querySelector(".lupe")) h4.insertAdjacentHTML("beforeend", `<span class="lupe">⤢</span>`);
+    k.onclick = ()=>karteGross(k);
+  });
+
   const zm = $("#zielMin");
   if(zm) zm.onchange = ()=>{ D.ziel = Math.max(0, Math.round(parseFloat(zm.value)||0) * 60); sichern(); zeichne(); };
   const nt = $("#btnNachtragen");
@@ -2231,11 +2314,18 @@ function nachtragen(){
    Arbeitsfortschritt und ist deshalb winzig. Beim Einlesen wird
    zusammengefuehrt statt ersetzt: je Einstellung gewinnt die juengere
    Aenderung, der Verlauf wird vereinigt. */
+/* Fortschritt heißt: Es wurde tatsächlich etwas erledigt. Eine Notiz,
+   die von Anfang an in der Datei steht, ist kein Fortschritt und hat im
+   Stand nichts verloren, sonst besteht die Datei fast nur aus Rauschen. */
+function hatFortschritt(x){
+  return x.status === "gedreht" || x.status === "nachdreh"
+      || !!x.take || !!x.roh || !!x.grade || !!x.sound;
+}
 function standDaten(){
   return {
     typ:"klappe-stand", fassung:7, geraet:navigator.platform || "", zeit:new Date().toISOString(),
     ziel: D.ziel || 0,
-    eintraege: D.shots.filter(h=> h.ts || h.status!=="offen" || h.take || h.notiz || h.roh || h.grade || h.sound)
+    eintraege: D.shots.filter(h=> h.ts || hatFortschritt(h) || h.status === "raus")
       .map(h=>({id:h.id, ken:h.kennung, status:h.status, take:h.take, notiz:h.notiz,
                 roh:h.roh, grade:h.grade, sound:h.sound, ts:h.ts || 0})),
     log: D.log || []
@@ -2263,16 +2353,27 @@ function standEinlesen(obj){
   }
   if(!obj || obj.typ !== "klappe-stand" || !Array.isArray(obj.eintraege)) throw new Error("kein Stand");
   const m = new Map(D.shots.map(h=>[h.id, h]));
-  let n = 0, alt = 0;
+  let n = 0, alt = 0, unbekannt = 0;
+  const nachzuegler = [];
+  const uebertrag = (h, e)=>{
+    h.status = e.status || "offen"; h.take = e.take || ""; h.notiz = e.notiz || "";
+    h.roh = !!e.roh; h.grade = !!e.grade; h.sound = !!e.sound;
+    h.ts = Math.max(e.ts || 0, 1);
+  };
   obj.eintraege.forEach(e=>{
     const h = m.get(e.id);
-    if(!h) return;
-    if((e.ts || 0) > (h.ts || 0)){
-      h.status = e.status || "offen"; h.take = e.take || ""; h.notiz = e.notiz || "";
-      h.roh = !!e.roh; h.grade = !!e.grade; h.sound = !!e.sound; h.ts = e.ts || 0;
-      n++;
-    } else if((e.ts || 0) < (h.ts || 0)) alt++;
+    if(!h){ unbekannt++; return; }
+    if((e.ts || 0) > (h.ts || 0)){ uebertrag(h, e); n++; return; }
+    if((e.ts || 0) < (h.ts || 0)) alt++;
+    /* Ohne verlässlichen Zeitstempel, etwa bei einem Stand, der selbst aus
+       einer älteren Fassung geholt wurde, wäre sonst gar nichts passiert. */
+    if(hatFortschritt(e) && !hatFortschritt(h)) nachzuegler.push([h, e]);
   });
+  if(nachzuegler.length){
+    const frage = `In der Datei sind ${nachzuegler.length} Einstellungen abgehakt, die hier noch offen sind, `
+      + `aber ohne neueren Zeitstempel. Sollen sie trotzdem übernommen werden?`;
+    if(confirm(frage)){ nachzuegler.forEach(([h, e])=>{ uebertrag(h, e); n++; }); }
+  }
   if(!Array.isArray(D.log)) D.log = [];
   const da = new Set(D.log.map(logSchluessel));
   let nl = 0;
@@ -2281,7 +2382,14 @@ function standEinlesen(obj){
   });
   D.log.sort((a,b)=> a.t < b.t ? -1 : 1);
   sichern(); zeichne();
-  toast(`Zusammengeführt: ${n} Einstellungen übernommen, ${alt} hier neuer, ${nl} Verlaufseinträge dazu.`);
+  const abgehakt = obj.eintraege.filter(hatFortschritt).length;
+  toast(n
+    ? `Zusammengeführt: ${n} Einstellungen übernommen, ${alt} hier neuer, ${nl} Verlaufseinträge dazu.`
+    : `Nichts übernommen. Die Datei enthält ${obj.eintraege.length} Einträge, davon ${abgehakt} mit Fortschritt. `
+      + (nachzuegler.length ? "Die Übernahme wurde abgelehnt."
+        : abgehakt ? "Hier steht überall schon derselbe oder ein neuerer Stand."
+                  : "In der Datei ist nichts abgehakt, sie stammt vermutlich von einem leeren Stand.")
+      + (unbekannt ? ` ${unbekannt} Einträge gehören zu keiner bekannten Einstellung.` : ""));
 }
 
 function theme(t){
@@ -2397,6 +2505,7 @@ if(location.protocol.indexOf("http") === 0){
 }
 
 anzeigeLaden();
+bloeckeHerstellen();
 $("#swRaus").checked = V.zeigeRaus;
 D = laden();
 zeichne();
