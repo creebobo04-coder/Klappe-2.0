@@ -1,7 +1,7 @@
 /* Klappe, Zwischenspeicher für den Betrieb ohne Netz.
    Beim ersten Öffnen legt der Browser die App ab, danach startet sie
    auch dann, wenn am Drehort kein Empfang ist. */
-const CACHE = "klappe-8";
+const CACHE = "klappe-9";
 const DATEIEN = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-512.png"];
 
 self.addEventListener("install", ev=>{

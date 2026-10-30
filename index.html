@@ -198,6 +198,20 @@ main{display:flex;flex-direction:column;min-width:0;min-height:0}
 .inl input.take{width:68px;font-family:var(--mono)}
 .inl input.nz{width:240px}
 .flag.ortweg{background:color-mix(in srgb, var(--accent) 16%, transparent);color:var(--accent)}
+.flag.stativ{background:var(--warn-soft);color:var(--warn)}
+.werzeile{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:7px}
+.werzeile .eyebrow{margin-right:3px}
+.wer{font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
+.wer.unklar{border-style:dashed;color:var(--warn)}
+.wer.weg{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.wer.leer{font-style:italic;border-style:dotted}
+.werhin{font-size:11px;color:var(--ink-3, var(--ink-2));font-style:italic;flex-basis:100%}
+.ohnehin{font-size:11.5px;line-height:1.45;color:var(--warn);padding:2px 2px 4px}
+.ohnehin .lnk,.lnk{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;font:inherit;cursor:pointer}
+.fhin{display:block;font-size:11.5px;color:var(--ink-2);margin-top:4px}
+.besrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.besrow input{width:100%}
+@media (max-width:640px){.besrow{grid-template-columns:1fr}}
 .skript{max-width:860px}
 .skkopf{padding:0 0 16px}
 .skkopf p{font-size:12.5px;line-height:1.7;color:var(--ink-3);margin:6px 0 12px;max-width:62ch}
@@ -546,6 +560,9 @@ svg .bal:hover{opacity:.75}
         <label class="sel"><select id="fAkt"></select></label>
         <label class="sel"><select id="fStatus"></select></label>
         <label class="sel"><select id="fGeraet"></select></label>
+        <label class="sel"><select id="fOhne"></select></label>
+        <div class="ohnehin" id="ohneHinweis" hidden></div>
+        <button class="reset" id="btnBesetzung">Besetzung festlegen</button>
         <button class="reset" id="btnReset">Filter zurücksetzen</button>
       </div>
       <div class="schalter">
@@ -682,6 +699,9 @@ svg .bal:hover{opacity:.75}
       <div class="fld"><label class="eyebrow">Ton am Set</label><textarea id="hTon"></textarea></div>
     </div>
     <div class="fld"><label class="eyebrow">Requisiten</label><input id="hRequisiten"></div>
+    <div class="fld"><label class="eyebrow">Wer wird gebraucht, Figuren mit Komma, leer heißt niemand</label>
+      <input id="hFiguren" placeholder="z. B. Oskar, Yannick">
+      <div class="fhin" id="hFigHin"></div></div>
     <div class="fld"><label class="eyebrow">Schnitt</label><textarea id="hSchnitt"></textarea></div>
     <div class="g2">
       <div class="fld"><label class="eyebrow">Farbe und Bild in der Post</label><textarea id="hFarbe"></textarea></div>
@@ -701,6 +721,16 @@ svg .bal:hover{opacity:.75}
     <button class="btn gh" id="hDelete">Löschen</button><div style="flex:1"></div>
     <button class="btn" data-close>Abbrechen</button><button class="btn prim" id="hSave">Speichern</button>
   </div>
+</dialog>
+
+<dialog id="dlgBesetzung">
+  <div class="dh"><h3>Besetzung</h3></div>
+  <div class="db">
+    <p class="fhin" style="margin:0 0 12px">Wer spielt welche Figur? Danach richtet sich der Filter. Steht bei einer Figur niemand, zählen ihre Einstellungen als unklar und tauchen im Filter nicht auf.</p>
+    <div id="besListe"></div>
+  </div>
+  <div class="df"><div style="flex:1"></div>
+    <button class="btn" data-close>Abbrechen</button><button class="btn prim" id="besSave">Speichern</button></div>
 </dialog>
 
 <dialog id="dlgKarte" class="gross">
@@ -856,9 +886,69 @@ const STUFEN = [
   {id:"sound", name:"Ton",        feld:"postton", hinweis:"Zuletzt. Dialog, Atmo, Foley und Musik."}
 ];
 
+/* ═════════ Wer wird gebraucht ══════════════════════════════════════
+   Für jede offene Einstellung steht hier, welche Figuren dafür da sein
+   müssen: im Bild, als Hand oder Fuß oder als Stimme. Eingeordnet am
+   30.10.2026 anhand von Titel, Skriptzitat und finaler Skriptfassung.
+   Welche Person welche Figur spielt, steht in D.besetzung und lässt sich
+   in der App ändern. Eigene Korrekturen pro Einstellung landen in
+   h.figurenEigen und schlagen diese Liste. */
+const FIGUREN = {"n002":["Walross"],"e038":["Herr Wesnigk","Fahrer mit Auto"],"e039":["Herr Wesnigk","Fahrer mit Auto"],"e040":["Herr Wesnigk","Fahrer mit Auto"],"e041":["Herr Wesnigk","Fahrer mit Auto"],"e042":["Herr Wesnigk"],"e043":["Herr Wesnigk","Fahrer mit Auto"],"e044":["Herr Wesnigk","Fahrer mit Auto"],"e045":["Herr Wesnigk","Fahrer mit Auto"],"e046":["Herr Wesnigk","Fahrer mit Auto"],"e047":["Herr Wesnigk","Fahrer mit Auto"],"e048":["Herr Wesnigk","Fahrer mit Auto"],"e049":["Fahrer mit Auto"],"e050":["Fahrer mit Auto"],"e051":["Fahrer mit Auto"],"e052":[],"e053":[],"n003":[],"e054":[],"e055":[],"n004":[],"e056":[],"n005":[],"e057":[],"e059":["Herr Wesnigk","Pestmaske","Pferdemaske"],"e060":["Herr Wesnigk","Pestmaske","Pferdemaske"],"e061":["Herr Wesnigk","Pestmaske"],"e062":[],"e063":["Herr Wesnigk","Pestmaske","Pferdemaske"],"e058":[],"e064":["Herr Wesnigk","Pestmaske"],"e065":["Herr Wesnigk"],"e067":[],"e068":[],"e069":[],"e073":["Herr Wesnigk"],"e074":[],"e075":["Herr Wesnigk","Pestmaske"],"e076":["Pestmaske"],"e077":["Herr Wesnigk"],"e078":["Herr Wesnigk"],"e082":["Herr Wesnigk"],"e092":["Herr Wesnigk"],"e093":["Herr Wesnigk","Walross"],"e095":["Walross"],"e098":["Walross"],"e099":["Pferdemaske","Walross","Pestmaske","Herr Wesnigk"],"z009":["Pferdemaske"],"z010":["Pferdemaske"],"e100":[],"e101":[],"e102":[],"e103":["Walross"],"e104":["Walross","Pestmaske","Pferdemaske"],"e105":["Walross","Pestmaske","Pferdemaske"],"e106":["Walross","Pestmaske"],"e107":["Pestmaske"],"e108":[],"e109":["Walross","Pestmaske"],"e110":[],"e111":[],"e112":["Walross"],"e113":[],"n101":[],"e114":["Walross"],"e115":["Walross"],"z011":["Walross"],"z012":["Walross"],"z013":["Walross"],"e116":["Walross"],"e117":["Walross"],"n102":[],"e118":[],"e119":["Walross"],"e126":[],"e153":["Yannick"],"e155":[],"e192":[],"e223":["Oskar"],"e244":["Oskar","Yannick","Leon"],"e258":["Oskar","Rudi"],"e321":["Oskar","Yannick","Leon"],"e322":["Oskar","Yannick"],"e323":["Oskar"],"e324":["Yannick"],"e325":["Oskar","Yannick","Ärztin"],"e326":["Yannick"],"e327":["Oskar"],"e328":["Yannick"],"e329":["Oskar"],"e330":["Leon","Ärztin"],"e331":["Leon"],"z025":["Leon"],"z026":["Leon"],"z027":[],"e332":["Leon"],"e333":["Oskar"],"e334":["Yannick"],"e335":["Leon"],"e336":["Leon"],"e337":["Oskar"],"e338":["Leon"],"e339":["Leon","Ärztin"],"e340":["Yannick"],"e341":["Leon"],"e342":["Leon"],"e343":["Leon"],"e344":["Oskar","Yannick"],"e345":["Yannick"],"e346":["Yannick"],"e347":["Leon"],"e348":["Leon"],"e349":["Yannick"],"e350":["Leon"],"e351":["Leon"],"e352":["Yannick"],"e353":["Oskar","Yannick","Leon"],"e354":["Leon"],"e355":["Oskar"],"e356":["Yannick"],"e357":["Oskar"],"e358":["Yannick"],"e359":["Oskar"],"e360":["Leon"],"e361":["Oskar"],"e362":["Leon"],"e363":["Oskar","Yannick","Leon"],"e364":["Leon"],"e365":["Yannick"],"e366":["Leon"],"e367":["Yannick"],"e368":["Oskar"],"e369":["Yannick"],"e370":["Oskar"],"e371":["Yannick"],"e372":["Yannick"],"e373":["Leon"],"e374":["Oskar"],"e375":["Leon"],"e376":["Yannick"],"e377":["Oskar"],"e378":[],"e389":[],"e436":[],"e440":[],"e486":[],"e487":[],"e488":[],"e489":["Oskar"],"e490":["Yannick"],"e491":["Leon"],"e492":[],"z034":[],"z035":[],"z036":[],"z037":[],"n010":[],"n011":[],"n012":[],"n013":[],"n014":[],"n015":[],"n016":[],"n017":[],"e493":[],"n018":[],"n019":[],"n020":[],"e494":[],"n021":[],"n022":[],"n023":[],"n024":[],"e495":[],"e566":["Oskar","Yannick","Leon"],"e572":[],"e591":["Oskar","Yannick","Leon"],"e603":[],"e604":[],"e605":[],"e644":[],"e661":[],"e662":[],"e665":["Leon"],"e666":["Leon"],"e667":["Oskar"],"e668":["Leon"],"z069":["Leon"],"z070":["Leon"],"z071":["Leon"],"e669":["Leon"],"e670":["Leon"],"e671":["Yannick"],"e672":["Oskar"],"e673":["Leon"],"e674":["Leon"],"e675":["Leon"],"z072":[],"z073":["Leon"],"z074":["Leon"],"e676":["Leon"],"e677":["Leon"],"e678":["Oskar","Yannick","Leon"],"e679":["Leon"],"e680":["Leon"],"e681":["Oskar"],"e682":["Yannick"],"e683":[],"e684":["Oskar"],"e685":["Yannick"],"e686":["Leon"],"e687":["Leon"],"e698":[],"e700":["Oskar","Yannick","Leon"],"e702":["Oskar"],"e705":["Yannick"],"e706":["Yannick"],"e707":["Yannick"],"e709":["Leon"],"e710":["Leon"],"e711":["Leon"],"e712":[],"e722":[],"n034":[],"e723":["Oskar","Yannick","Leon"],"e724":["Yannick"],"e725":["Leon"],"e726":["Oskar"],"e727":["Yannick"],"e728":["Oskar"],"e729":[],"e730":["Leon"],"e731":["Yannick"],"e732":["Oskar"],"e733":["Leon"],"e734":["Yannick"],"n035":["Oskar","Yannick","Leon"],"e735":["Oskar"],"e736":[],"e737":[],"e738":["Leon"],"e739":["Leon"],"e740":["Leon"],"e741":["Leon"],"e742":["Leon"],"e743":[],"e744":["Leon"],"e745":["Leon"],"e746":["Leon"],"e747":["Leon"],"z087":["Leon"],"e748":["Leon"],"z088":["Leon"],"z089":["Leon"],"e749":["Leon"],"z090":["Leon"],"e750":["Leon"],"e751":["Leon"],"e752":["Leon"],"e753":["Leon"],"e754":["Leon"],"e755":["Leon"],"e756":["Leon"],"e757":["Leon"],"e758":[],"e759":["Oskar","Yannick"],"e760":[],"e761":[],"e762":["Oskar"],"e763":["Oskar"],"e764":["Oskar"],"e765":["Yannick"],"e766":["Oskar","Yannick"],"e767":["Leon"],"e768":[],"e769":["Yannick"],"e770":["Oskar"],"e771":["Leon"],"e772":["Oskar"],"e773":["Leon"],"e774":["Yannick"],"e775":["Leon"],"e776":["Oskar"],"e777":["Leon"],"e778":["Oskar"],"e779":["Leon"],"n103":["Yannick"],"n104":["Oskar"],"e780":["Yannick"],"e781":[],"e782":["Yannick"],"e783":["Oskar"],"e784":["Yannick"],"e785":[],"e786":["Oskar","Yannick"],"e787":["Leon"],"e788":["Oskar"],"e789":["Yannick"],"e790":["Oskar"],"e791":[],"e792":["Oskar","Yannick"],"e793":["Yannick"],"e794":["Oskar"],"e795":["Yannick"],"e796":["Oskar"],"e797":["Yannick"],"e798":["Yannick"],"e799":[],"e800":["Yannick"],"z091":["Yannick"],"z092":["Yannick"],"z093":["Yannick"],"z094":["Yannick"],"e801":["Yannick"],"e802":["Leon"],"e803":[],"e804":["Oskar"],"e805":["Oskar","Yannick"],"e806":[],"e807":["Oskar","Yannick"],"e808":[],"e809":[],"e810":[],"n036":["Oskar","Yannick"],"e811":["Oskar","Yannick"],"e812":["Yannick"],"e813":["Yannick"],"e814":["Yannick"],"e815":["Yannick"],"n037":["Yannick"],"z095":["Yannick"],"z096":["Yannick"],"e816":["Oskar","Yannick"],"e817":[],"e818":["Yannick"],"e819":["Oskar","Yannick"],"e820":["Oskar"],"e821":["Oskar","Yannick"],"e822":["Oskar","Yannick"],"e823":["Oskar","Yannick"],"e824":["Oskar","Yannick"],"e825":["Yannick"],"e826":["Yannick"],"e827":["Oskar"],"e828":["Yannick"],"e829":["Oskar","Yannick"],"e830":["Oskar","Yannick"],"e831":["Oskar","Yannick"],"e832":["Oskar","Yannick"],"e833":["Oskar","Yannick"],"e834":[],"e835":[],"e836":["Yannick"],"e837":["Oskar","Yannick"],"e838":["Yannick"],"z097":["Yannick"],"z098":["Yannick"],"z099":["Yannick"],"e839":["Yannick"],"e840":["Oskar","Yannick"],"e841":["Yannick"],"e842":["Oskar","Yannick"],"e843":[],"z100":[],"z101":[],"e844":[],"e845":["Oskar","Yannick"],"e846":[],"e847":[],"e848":[],"e849":[],"n038":[],"e850":[],"e851":[],"e852":["Oskar","Yannick"],"n039":[]};
+const FIGURHINWEIS = {"n002":"Der Unbekannte ist dieselbe Person wie das Walross.","e042":"Reines Insert, geht auch im stehenden Auto oder am Tisch.","e061":"Nur eine behandschuhte Hand, ich habe die Pestmaske eingetragen.","e076":"Kamera hängt am Stuhl, im Bild ist nur die Pestmaske.","e099":"Die Leiche liegt im Bild, deshalb Wesnigk mit eingetragen.","e223":"Nur Rudis Stimme. Ob Oskar dabei im Bild ist, geht aus dem Skript nicht hervor.","e258":"Oskar und Rudi nie gleichzeitig im Bild, Wurf getrennt drehen.","e490":"Wenn das Auto fahren soll, braucht ihr zusätzlich einen Fahrer.","e681":"Nur Oskars Lachen. Was im Bild ist, steht nicht im Skript, vermutlich Wasser.","z027":"Nur die Krücken, keine Person im Bild.","e683":"Nur die Wasseroberfläche. Drehort ist das Ersatzgewässer.","e809":"Besteht aus schon gedrehtem Material mit Leon.","e851":"Besteht aus schon gedrehtem Material.","e850":"Vorhandene Fotos."};
+const BESETZUNG_START = {"Oskar": "Oskar", "Rudi": "Oskar", "Yannick": "Yannick", "Leon": "Leon", "Herr Wesnigk": "Herr Wesnigk", "Walross": "", "Pestmaske": "", "Pferdemaske": "", "Fahrer mit Auto": "Leon", "Ärztin": ""};
+function figurenVon(h){
+  if(Array.isArray(h.figurenEigen)) return h.figurenEigen;
+  return Object.prototype.hasOwnProperty.call(FIGUREN, h.id) ? FIGUREN[h.id] : null;
+}
+const darsteller = f => ((D.besetzung||{})[f] || "").trim();
+function leuteVon(h){
+  const f = figurenVon(h); if(!f) return null;
+  return [...new Set(f.map(x=>darsteller(x) || "?"))];
+}
+/* Machbar ohne eine Person heißt: eingeordnet, noch zu drehen, jede
+   gebrauchte Figur hat einen Darsteller, und keiner davon ist die Person. */
+function machbarOhne(h, wer){
+  if(h.status!=="offen" && h.status!=="nachdreh") return false;
+  const f = figurenVon(h); if(!f) return false;
+  return f.every(x=>{ const p = darsteller(x); return p && p !== wer; });
+}
+function unklarOhne(h, wer){
+  if(h.status!=="offen" && h.status!=="nachdreh") return false;
+  const f = figurenVon(h); if(!f) return false;
+  return f.some(x=>!darsteller(x)) && f.every(x=>darsteller(x) !== wer);
+}
+/* Alle gebrauchten Leute stehen selbst vor der Kamera und die Kamera soll
+   sich bewegen: dann fehlt jemand dahinter. */
+function fehltKamera(h){
+  if(!V.ohne) return false;
+  const l = leuteVon(h); if(!l || !l.length) return false;
+  const alle = [...new Set(Object.values(D.besetzung||{}).map(x=>x.trim()).filter(Boolean))]
+    .filter(p=>p !== V.ohne);
+  const frei = alle.filter(p=>!l.includes(p) && ["Oskar","Yannick"].includes(p));
+  if(frei.length) return false;
+  const b = String(h.bewegung||"").toLowerCase();
+  return !(b.startsWith("statisch") || b.startsWith("grafik") || b.startsWith("zeitraffer"));
+}
+function leuteHtml(h){
+  const f = figurenVon(h); if(!f) return "";
+  const txt = f.length ? f.map(x=>{ const p = darsteller(x);
+      const cls = !p ? "wer unklar" : (V.ohne && p===V.ohne ? "wer weg" : "wer");
+      const name = p && p!==x ? `${x} (${p})` : x;
+      return `<span class="${cls}">${esc(name)}${p?"":" ?"}</span>`; }).join("")
+    : `<span class="wer leer">niemand vor der Kamera</span>`;
+  const hin = FIGURHINWEIS[h.id] && !Array.isArray(h.figurenEigen)
+    ? `<span class="werhin">${esc(FIGURHINWEIS[h.id])}</span>` : "";
+  return `<div class="werzeile"><span class="eyebrow">Gebraucht</span>${txt}${hin}</div>`;
+}
+function ohneListe(){
+  const p = [...new Set(Object.values(D.besetzung||{}).map(x=>x.trim()).filter(Boolean))];
+  p.sort((a,b)=> (a==="Leon"?-1:b==="Leon"?1:a.localeCompare(b,"de")));
+  return p;
+}
+
 let D = null;
 let V = {ansicht:"drehbuch", gruppe:"tag", stufe:"roh", nurOffenPost:false,
-         ort:"", tag:"", akt:"", status:"", geraet:"", suche:"", auf:{},
+         ort:"", tag:"", akt:"", status:"", geraet:"", ohne:"", suche:"", auf:{},
          zeigeRaus:true, treffer:[], trefferIdx:0, tcListe:[]};
 let setIdx = 0, setListe = [];
 
@@ -944,6 +1034,10 @@ function ergaenze(d){
     d.kstand = START.kstand;
   }
   d.log = Array.isArray(d.log) ? d.log : [];
+  /* ab Fassung 9: wer spielt welche Figur. Neue Figuren kommen dazu,
+     selbst eingetragene Darsteller bleiben. */
+  d.besetzung = Object.assign({}, BESETZUNG_START,
+    d.besetzung && typeof d.besetzung === "object" ? d.besetzung : {});
   d.ziel = typeof d.ziel === "number" ? d.ziel : 0;
   const ftAlt = {};
   START.szenen.forEach(s=> ftAlt[s.id] = s.ftagId);
@@ -1187,6 +1281,7 @@ function passt(h){
   if(V.akt && s.akt!==V.akt) return false;
   if(V.status && h.status!==V.status) return false;
   if(V.geraet && h.geraet!==V.geraet) return false;
+  if(V.ohne && !machbarOhne(h, V.ohne)) return false;
   if(V.suche){
     const q = V.suche.toLowerCase();
     const heu = [h.kennung,h.titel,h.skript,h.licht,h.ton,h.schnitt,h.groesse,h.bewegung,
@@ -1243,6 +1338,14 @@ function zeichneRail(){
   opt("#fStatus", [{v:"",t:"Jeder Status"}, ...Object.entries(STATUS).map(([v,t])=>({v,t}))], V.status);
   const ger = [...new Set(D.shots.map(h=>h.geraet).filter(Boolean))].sort();
   opt("#fGeraet", [{v:"",t:"Jede Kamera"}, ...ger.map(g=>({v:g,t:g}))], V.geraet);
+  opt("#fOhne", [{v:"",t:"Jede Besetzung"}, ...ohneListe().map(p=>({v:p,t:"Offen und ohne "+p.replace(/^Herr /,"Herrn ")+" machbar"}))], V.ohne);
+  const hinOhne = $("#ohneHinweis");
+  if(hinOhne){
+    const n = V.ohne ? D.shots.filter(h=>unklarOhne(h, V.ohne)).length : 0;
+    hinOhne.hidden = !n;
+    hinOhne.innerHTML = n ? `${n} weitere Einstellungen fehlen, weil bei einer Figur noch kein Darsteller eingetragen ist. <button class="lnk" id="btnBesetzung2">Besetzung festlegen</button>` : "";
+    const b2 = $("#btnBesetzung2"); if(b2) b2.onclick = oeffneBesetzung;
+  }
 
   let html = '<div class="eyebrow">Szenen</div>', akt = null;
   D.szenen.forEach(s=>{
@@ -1273,7 +1376,8 @@ function shotHtml(h){
               + (h.status==="raus"?`<span class="flag raus">gestrichen</span>`:"")
               + (h.take?`<span class="flag take">Take ${esc(h.take)}</span>`:"")
               + (abweichend(h)?`<span class="flag ortweg" title="Diese Einstellung wird woanders gedreht als der Rest der Szene">${esc(ort(h.ort).name)}</span>`:"")
-              + (abwTag(h)?`<span class="flag ortweg" title="Diese Einstellung wird an einem anderen Drehtag gedreht als der Rest der Szene">${esc(tag(h.tag).label)}</span>`:"");
+              + (abwTag(h)?`<span class="flag ortweg" title="Diese Einstellung wird an einem anderen Drehtag gedreht als der Rest der Szene">${esc(tag(h.tag).label)}</span>`:"")
+              + (fehltKamera(h)?`<span class="flag stativ" title="Alle, die da sind, stehen vor der Kamera. Die Bewegung (${esc(h.bewegung)}) geht so nur mit einer weiteren Person, sonst vom Stativ drehen.">nur Stativ</span>`:"");
   const lz = laufzeit().map.get(h.id) || {start:0};
   return `<div class="shot ${h.status}" id="sh-${h.id}">
     <div class="shot-row">
@@ -1284,6 +1388,7 @@ function shotHtml(h){
           <span class="tc" title="Ungefähre Stelle im fertigen Film">${h.status==="raus"?"—":fmt(lz.start)}</span>
           <span class="shot-titel">${markiere(esc(h.titel), V.suche)}</span>${flags}</div>
         <div class="chips">${chips(h)}</div>
+        ${h.status==="offen"||h.status==="nachdreh"||Array.isArray(h.figurenEigen)?leuteHtml(h):""}
         ${h.requisiten?`<div class="req"><span class="eyebrow">Requisiten</span><span>${esc(h.requisiten)}</span></div>`:""}
         ${h.notiz?`<div class="shotnote">${esc(h.notiz)}</div>`:""}
       </div>
@@ -1924,7 +2029,7 @@ function zeichne(){
 /* Zeigt an der zugeklappten Leiste, wie viele Filter gerade greifen,
    damit man nicht rätselt, warum etwas fehlt. */
 function filterZahl(){
-  const n = [V.ort, V.tag, V.akt, V.status, V.geraet].filter(Boolean).length + (V.zeigeRaus ? 0 : 1);
+  const n = [V.ort, V.tag, V.akt, V.status, V.geraet, V.ohne].filter(Boolean).length + (V.zeigeRaus ? 0 : 1);
   const z = $("#filterZahl");
   if(!z) return;
   z.textContent = n;
@@ -1999,8 +2104,11 @@ function setZeichne(){
   $("#setTitel").textContent = h.titel;
   $("#setPills").innerHTML = KURZ.filter(([k])=>h[k]).map(([k,l,cv])=>
     `<div class="setpill" style="--c:var(${cv})"><span class="k">${l}</span><span class="v">${esc(h[k])}</span></div>`).join("");
-  $("#setReq").style.display = h.requisiten ? "" : "none";
-  $("#setReq").textContent = h.requisiten ? "Requisiten: " + h.requisiten : "";
+  const wer = leuteVon(h);
+  const reqText = [wer && wer.length ? "Gebraucht: " + figurenVon(h).map(x=>{ const p = darsteller(x); return p && p!==x ? x+" ("+p+")" : x; }).join(", ") : "",
+                   h.requisiten ? "Requisiten: " + h.requisiten : ""].filter(Boolean).join("   ·   ");
+  $("#setReq").style.display = reqText ? "" : "none";
+  $("#setReq").textContent = reqText;
   $("#setScript").style.display = h.skript ? "" : "none";
   $("#setScript").innerHTML = h.skript ? skriptHtml(h.skript, "", h) : "";
   $("#setBlocks").innerHTML = BLOCKS.filter(([k])=>h[k]).map(([k,l,cv])=>
@@ -2052,6 +2160,11 @@ function oeffneShot(id){
     + D.tage.map(t=>`<option value="${t.id}">${esc(t.label)}</option>`).join("");
   $("#hTag").value = aktShot.tag || "";
   $("#hDauer").value = dauerVon(aktShot);
+  const fv = figurenVon(aktShot);
+  $("#hFiguren").value = fv ? fv.join(", ") : "";
+  $("#hFiguren").dataset.vorher = $("#hFiguren").value;
+  $("#hFigHin").textContent = fv ? (Array.isArray(aktShot.figurenEigen) ? "Von dir geändert. Feld leeren und \u201eautomatisch\u201c eintippen setzt es zurück." : (FIGURHINWEIS[aktShot.id] || ""))
+    : "Diese Einstellung wurde nicht eingeordnet, weil sie schon gedreht oder gestrichen war.";
   [["dGroesse","groesse"],["dBewegung","bewegung"],["dGeraet","geraet"],["dObjektiv","objektiv"]]
     .forEach(([dl,k])=>{
       $("#"+dl).innerHTML = [...new Set(D.shots.map(x=>x[k]).filter(Boolean))].sort()
@@ -2069,6 +2182,12 @@ $("#hSave").onclick = ()=>{
   const dz = parseFloat(String($("#hDauer").value).replace(",", "."));
   aktShot.dauer = isFinite(dz) && dz >= 0 ? dz : dauerVon(aktShot);
   aktShot.kennung = szene(aktShot.szeneId).nr + "." + aktShot.nr;
+  const fNeu = $("#hFiguren").value.trim();
+  if(fNeu.toLowerCase() === "automatisch"){ delete aktShot.figurenEigen; }
+  else if(fNeu !== $("#hFiguren").dataset.vorher){
+    aktShot.figurenEigen = fNeu ? [...new Set(fNeu.split(",").map(x=>x.trim()).filter(Boolean))] : [];
+    aktShot.figurenEigen.forEach(f=>{ if(!(f in D.besetzung)) D.besetzung[f] = ""; });
+  }
   sichern(); $("#dlgShot").close();
   if($("#set").classList.contains("an")) setZeichne(); else zeichne();
 };
@@ -2076,6 +2195,24 @@ $("#hDelete").onclick = ()=>{
   if(!confirm(`${aktShot.kennung} wirklich löschen?`)) return;
   D.shots = D.shots.filter(x=>x.id!==aktShot.id);
   sichern(); $("#dlgShot").close(); zeichne();
+};
+
+function oeffneBesetzung(){
+  const figs = new Set(Object.keys(D.besetzung||{}));
+  Object.values(FIGUREN).forEach(l=>l.forEach(f=>figs.add(f)));
+  D.shots.forEach(h=>(h.figurenEigen||[]).forEach(f=>figs.add(f)));
+  const zahl = f => D.shots.filter(h=>(h.status==="offen"||h.status==="nachdreh") && (figurenVon(h)||[]).includes(f)).length;
+  const leute = ohneListe();
+  $("#besListe").innerHTML = [...figs].sort((a,b)=>zahl(b)-zahl(a)).map(f=>
+    `<div class="besrow"><div><b>${esc(f)}</b><span class="fhin">${zahl(f)} offene Einstellungen</span></div>
+     <input data-bes="${esc(f)}" list="besLeute" value="${esc((D.besetzung||{})[f]||"")}" placeholder="noch offen"></div>`).join("")
+    + `<datalist id="besLeute">${leute.map(p=>`<option>${esc(p)}</option>`).join("")}</datalist>`;
+  $("#dlgBesetzung").showModal();
+}
+$("#besSave").onclick = ()=>{
+  $$("#besListe [data-bes]").forEach(i=>{ D.besetzung[i.dataset.bes] = i.value.trim(); });
+  if(V.ohne && !ohneListe().includes(V.ohne)) V.ohne = "";
+  sichern(); $("#dlgBesetzung").close(); zeichne(); toast("Besetzung gespeichert.");
 };
 
 let aktKostuem = null;
@@ -2234,12 +2371,14 @@ $("#fOrt").onchange = e=>{ V.ort=e.target.value; zeichne(); };
 $("#fAkt").onchange = e=>{ V.akt=e.target.value; zeichne(); };
 $("#fStatus").onchange = e=>{ V.status=e.target.value; zeichne(); };
 $("#fGeraet").onchange = e=>{ V.geraet=e.target.value; zeichne(); };
+$("#fOhne").onchange = e=>{ V.ohne=e.target.value; zeichne(); };
+$("#btnBesetzung").onclick = ()=>oeffneBesetzung();
 $("#suche").oninput = e=>{ V.suche=e.target.value.trim(); V.trefferIdx=0; zeichne(); };
 $("#suche").onkeydown = e=>{
   if(e.key === "Enter"){ e.preventDefault(); trefferGeh(e.shiftKey ? -1 : 1); }
   if(e.key === "Escape"){ e.target.blur(); }
 };
-$("#btnReset").onclick = ()=>{ V.ort=V.tag=V.akt=V.status=V.geraet=V.suche=""; $("#suche").value=""; zeichne(); };
+$("#btnReset").onclick = ()=>{ V.ort=V.tag=V.akt=V.status=V.geraet=V.ohne=V.suche=""; $("#suche").value=""; zeichne(); };
 
 $("#btnSet").onclick = ()=>{ zu(); setStart(); };
 $("#swRaus").onchange = e=>{ V.zeigeRaus = e.target.checked; anzeigeSichern(); zeichne(); };
